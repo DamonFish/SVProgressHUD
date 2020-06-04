@@ -314,23 +314,31 @@ typedef void (^SVProgressHUDDismissCompletion)(void);
 
 #pragma mark - Show Methods
 
-/// Shows the HUD without any additional status message.
-+ (void)show;
+/*
+ 为了兼容最早SVProgressHUD的使用方式， 即每次show都可以指定maskType。
+ 我们修改了所有的Show Methods。
+ 修改基于2.2.9版本。
+ 修改内容： 指定maskType的show方法，使用指定的maskType， 未指定maskType的show方法，默认使用SVProgressHUDMaskTypeNone。
+ 
+ 修改了[[UIApplication sharedApplication] delegate 的bug
+ 修改了[UIScreen mainScreen].applicationFrame 弃用的问题
+ 修改了HUD显示，自动消失的最短显示时间
+ */
 
-/// Shows the HUD with a provided status message.
-/// @param status The message to be displayed alongside the HUD.
++ (void)show;
++ (void)showWithMaskType:(SVProgressHUDMaskType)maskType;
 + (void)showWithStatus:(nullable NSString*)status;
++ (void)showWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
+
 
 /// Display methods to show progress on the HUD.
 
 /// Shows the HUD with a progress indicator.
 /// @param progress A float value between 0.0 and 1.0 indicating the progress.
 + (void)showProgress:(float)progress;
-
-/// Shows the HUD with a progress indicator and a provided status message.
-/// @param progress A float value between 0.0 and 1.0 indicating the progress.
-/// @param status The message to be displayed alongside the progress indicator.
++ (void)showProgress:(float)progress maskType:(SVProgressHUDMaskType)maskType;
 + (void)showProgress:(float)progress status:(nullable NSString*)status;
++ (void)showProgress:(float)progress status:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 
 /// Updates the current status of the loading HUD.
 /// @param status The new status message to update the HUD with.
@@ -338,20 +346,18 @@ typedef void (^SVProgressHUDDismissCompletion)(void);
 
 /// Shows an info status with the provided message.
 /// @param status The info message to be displayed.
-+ (void)showInfoWithStatus:(nullable NSString*)status;
-
-/// Shows a success status with the provided message.
-/// @param status The success message to be displayed.
++ (void)showInfoWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 + (void)showSuccessWithStatus:(nullable NSString*)status;
-
-/// Shows an error status with the provided message.
-/// @param status The error message to be displayed.
++ (void)showSuccessWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 + (void)showErrorWithStatus:(nullable NSString*)status;
++ (void)showErrorWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 
 /// Shows a custom image with the provided status message.
 /// @param image The custom image to be displayed.
 /// @param status The message to accompany the custom image.
 + (void)showImage:(nonnull UIImage*)image status:(nullable NSString*)status;
++ (void)showImage:(nonnull UIImage*)image status:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
+/* Show Methods *******/
 
 /// Sets the offset from the center for the HUD.
 /// @param offset The UIOffset value indicating how much the HUD should be offset from its center position.

@@ -66,13 +66,11 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 
 + (SVProgressHUD*)sharedView {
     static dispatch_once_t once;
-    
     static SVProgressHUD *sharedView;
-#if !defined(SV_APP_EXTENSIONS)
-    dispatch_once(&once, ^{ sharedView = [[self alloc] initWithFrame:[[[UIApplication sharedApplication] delegate] window].bounds]; });
-#else
+    
+    /// 目前我们只在iOS端， 所以去掉原版!defined(SV_APP_EXTENSIONS) 的判断
     dispatch_once(&once, ^{ sharedView = [[self alloc] initWithFrame:[[UIScreen mainScreen] bounds]]; });
-#endif
+    
     return sharedView;
 }
 
@@ -213,56 +211,61 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 
 #pragma mark - Show Methods
 
+/// reset mask type to default type,   current is none
++ (void)resetDefaultMaskType {
+    [self setDefaultMaskType:SVProgressHUDMaskTypeNone];
+}
+
 + (void)show {
-    [self showWithStatus:nil];
+    [self resetDefaultMaskType];
+    [[self sharedView] showProgress:SVProgressHUDUndefinedProgress status:nil];
 }
 
 + (void)showWithMaskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self show];
-    [self setDefaultMaskType:existingMaskType];
+    [[self sharedView] showProgress:SVProgressHUDUndefinedProgress status:nil];
 }
 
 + (void)showWithStatus:(NSString*)status {
-    [self showProgress:SVProgressHUDUndefinedProgress status:status];
+    [self resetDefaultMaskType];
+    [[self sharedView] showProgress:SVProgressHUDUndefinedProgress status:status];
 }
 
 + (void)showWithStatus:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showWithStatus:status];
-    [self setDefaultMaskType:existingMaskType];
+    [[self sharedView] showProgress:SVProgressHUDUndefinedProgress status:status];
 }
 
 + (void)showProgress:(float)progress {
-    [self showProgress:progress status:nil];
+    [self resetDefaultMaskType];
+    [[self sharedView] showProgress:progress status:nil];
 }
 
 + (void)showProgress:(float)progress maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showProgress:progress];
-    [self setDefaultMaskType:existingMaskType];
+    [[self sharedView] showProgress:progress status:nil];
 }
 
 + (void)showProgress:(float)progress status:(NSString*)status {
+    [self resetDefaultMaskType];
     [[self sharedView] showProgress:progress status:status];
 }
 
 + (void)showProgress:(float)progress status:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showProgress:progress status:status];
-    [self setDefaultMaskType:existingMaskType];
+    [[self sharedView] showProgress:progress status:status];
 }
-
 
 #pragma mark - Show, then automatically dismiss methods
 
++ (void)basicShowImage:(UIImage *)image status: (NSString *)status {
+    NSTimeInterval displayInterval = [self displayDurationForString:status];
+    [[self sharedView] showImage:image status:status duration:displayInterval];
+}
+
 + (void)showInfoWithStatus:(NSString*)status {
-    [self showImage:[self sharedView].infoImage status:status];
-    
+    [self resetDefaultMaskType];
+    [self basicShowImage:[self sharedView].infoImage status:status];
 #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
     if (@available(iOS 10.0, *)) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -273,14 +276,20 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 }
 
 + (void)showInfoWithStatus:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showInfoWithStatus:status];
-    [self setDefaultMaskType:existingMaskType];
+    [self basicShowImage:[self sharedView].infoImage status:status];
+    #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
+        if (@available(iOS 10.0, *)) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[self sharedView].hapticGenerator notificationOccurred:UINotificationFeedbackTypeWarning];
+            });
+        }
+    #endif
 }
 
 + (void)showSuccessWithStatus:(NSString*)status {
-    [self showImage:[self sharedView].successImage status:status];
+    [self resetDefaultMaskType];
+    [self basicShowImage:[self sharedView].successImage status:status];
 
 #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
     if (@available(iOS 10, *)) {
@@ -292,10 +301,8 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 }
 
 + (void)showSuccessWithStatus:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showSuccessWithStatus:status];
-    [self setDefaultMaskType:existingMaskType];
+    [self basicShowImage:[self sharedView].successImage status:status];
     
 #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
     if (@available(iOS 10.0, *)) {
@@ -307,7 +314,8 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 }
 
 + (void)showErrorWithStatus:(NSString*)status {
-    [self showImage:[self sharedView].errorImage status:status];
+    [self resetDefaultMaskType];
+    [self basicShowImage:[self sharedView].errorImage status:status];
     
 #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
     if (@available(iOS 10.0, *)) {
@@ -319,10 +327,8 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 }
 
 + (void)showErrorWithStatus:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showErrorWithStatus:status];
-    [self setDefaultMaskType:existingMaskType];
+    [self basicShowImage:[self sharedView].errorImage status:status];
     
 #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
     if (@available(iOS 10.0, *)) {
@@ -334,15 +340,13 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 }
 
 + (void)showImage:(UIImage*)image status:(NSString*)status {
-    NSTimeInterval displayInterval = [self displayDurationForString:status];
-    [[self sharedView] showImage:image status:status duration:displayInterval];
+    [self resetDefaultMaskType];
+    [self basicShowImage:image status:status];
 }
 
 + (void)showImage:(UIImage*)image status:(NSString*)status maskType:(SVProgressHUDMaskType)maskType {
-    SVProgressHUDMaskType existingMaskType = [self sharedView].defaultMaskType;
     [self setDefaultMaskType:maskType];
-    [self showImage:image status:status];
-    [self setDefaultMaskType:existingMaskType];
+    [self basicShowImage:image status:status];
 }
 
 
@@ -651,7 +655,8 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     double animationDuration = 0.0;
 
 #if !defined(SV_APP_EXTENSIONS) && TARGET_OS_IOS
-    self.frame = [[[UIApplication sharedApplication] delegate] window].bounds;
+    self.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
+    
     UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
 #elif !defined(SV_APP_EXTENSIONS) && !TARGET_OS_IOS
     self.frame= [UIApplication sharedApplication].keyWindow.bounds;
@@ -1181,8 +1186,8 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 #pragma mark - Getters
 
 + (NSTimeInterval)displayDurationForString:(NSString*)string {
-    CGFloat minimum = MAX((CGFloat)string.length * 0.06 + 0.5, [self sharedView].minimumDismissTimeInterval);
-    return MIN(minimum, [self sharedView].maximumDismissTimeInterval);
+    CGFloat minimum = MAX((CGFloat)string.length * 0.1 + 0.5, 1.7);
+    return MIN(minimum, [self sharedView].minimumDismissTimeInterval);
 }
 
 - (UIColor*)foregroundColorForStyle {
@@ -1223,12 +1228,12 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     }
     
     // Update frames
-#if !defined(SV_APP_EXTENSIONS)
-    CGRect windowBounds = [[[UIApplication sharedApplication] delegate] window].bounds;
-    _controlView.frame = windowBounds;
-#else
+//#if !defined(SV_APP_EXTENSIONS)
+//    CGRect windowBounds = [[[UIApplication sharedApplication] delegate] window].bounds;
+//    _controlView.frame = windowBounds;
+//#else
     _controlView.frame = [UIScreen mainScreen].bounds;
-#endif
+//#endif
     
     return _controlView;
 }

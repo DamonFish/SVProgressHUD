@@ -111,29 +111,41 @@ typedef void (^SVProgressHUDDismissCompletion)(void);
 
 #pragma mark - Show Methods
 
+/*
+ 为了兼容最早SVProgressHUD的使用方式， 即每次show都可以指定maskType。
+ 我们修改了所有的Show Methods。
+ 修改基于2.2.5版本。
+ 修改内容： 指定maskType的show方法，使用指定的maskType， 未指定maskType的show方法，默认使用SVProgressHUDMaskTypeNone。
+ 
+ 修改了[[UIApplication sharedApplication] delegate 的bug
+ 修改了[UIScreen mainScreen].applicationFrame 弃用的问题
+ 修改了HUD显示，自动消失的最短显示时间
+ */
+
 + (void)show;
-+ (void)showWithMaskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use show and setDefaultMaskType: instead.")));
++ (void)showWithMaskType:(SVProgressHUDMaskType)maskType;
 + (void)showWithStatus:(nullable NSString*)status;
-+ (void)showWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showWithStatus: and setDefaultMaskType: instead.")));
++ (void)showWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 
 + (void)showProgress:(float)progress;
-+ (void)showProgress:(float)progress maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showProgress: and setDefaultMaskType: instead.")));
++ (void)showProgress:(float)progress maskType:(SVProgressHUDMaskType)maskType;
 + (void)showProgress:(float)progress status:(nullable NSString*)status;
-+ (void)showProgress:(float)progress status:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showProgress:status: and setDefaultMaskType: instead.")));
++ (void)showProgress:(float)progress status:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 
 + (void)setStatus:(nullable NSString*)status; // change the HUD loading status while it's showing
 
 // stops the activity indicator, shows a glyph + status, and dismisses the HUD a little bit later
 + (void)showInfoWithStatus:(nullable NSString*)status;
-+ (void)showInfoWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showInfoWithStatus: and setDefaultMaskType: instead.")));
++ (void)showInfoWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 + (void)showSuccessWithStatus:(nullable NSString*)status;
-+ (void)showSuccessWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showSuccessWithStatus: and setDefaultMaskType: instead.")));
++ (void)showSuccessWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 + (void)showErrorWithStatus:(nullable NSString*)status;
-+ (void)showErrorWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showErrorWithStatus: and setDefaultMaskType: instead.")));
++ (void)showErrorWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 
 // shows a image + status, use white PNGs with the imageViewSize (default is 28x28 pt)
 + (void)showImage:(nonnull UIImage*)image status:(nullable NSString*)status;
-+ (void)showImage:(nonnull UIImage*)image status:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType __attribute__((deprecated("Use showImage:status: and setDefaultMaskType: instead.")));
++ (void)showImage:(nonnull UIImage*)image status:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
+/* Show Methods *******/
 
 + (void)setOffsetFromCenter:(UIOffset)offset;
 + (void)resetOffsetFromCenter;

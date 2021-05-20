@@ -928,7 +928,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     // Update accessibility as well as user interaction
     // \n cause to read text twice so remove "\n" new line character before setting up accessiblity label
     NSString *accessibilityString = [[self.statusLabel.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] componentsJoinedByString:@" "];
-    if(self.defaultMaskType != SVProgressHUDMaskTypeNone) {
+    if(self.defaultMaskType != SVProgressHUDMaskTypeNone && self.defaultMaskType != SVProgressHUDMaskTypeClear) {
         self.controlView.userInteractionEnabled = YES;
         self.accessibilityLabel =  accessibilityString ?: NSLocalizedString(@"Loading", nil);
         self.isAccessibilityElement = YES;
@@ -975,7 +975,12 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
                                                                   userInfo:[self notificationUserInfo]];
                 
                 // Update accessibility
-                UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
+                if (self.controlView.accessibilityViewIsModal) {
+                    // 如果发送此通知，会导致App的界面重新聚焦，
+                    // 焦点定位到navigationController的navigationBar的back按钮上
+                    // 所以仅当当前HUD是Modal状态是，才需发送此通知
+                    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
+                }
                 UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.statusLabel.text);
                 
                 // Dismiss automatically if a duration was passed as userInfo. We start a timer

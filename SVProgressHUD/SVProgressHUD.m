@@ -928,13 +928,14 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     // Update accessibility as well as user interaction
     // \n cause to read text twice so remove "\n" new line character before setting up accessiblity label
     NSString *accessibilityString = [[self.statusLabel.text componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] componentsJoinedByString:@" "];
+    
+    self.controlView.userInteractionEnabled = (self.defaultMaskType != SVProgressHUDMaskTypeNone);
+    
     if(self.defaultMaskType != SVProgressHUDMaskTypeNone && self.defaultMaskType != SVProgressHUDMaskTypeClear) {
-        self.controlView.userInteractionEnabled = YES;
         self.accessibilityLabel =  accessibilityString ?: NSLocalizedString(@"Loading", nil);
         self.isAccessibilityElement = YES;
         self.controlView.accessibilityViewIsModal = YES;
     } else {
-        self.controlView.userInteractionEnabled = NO;
         self.hudView.accessibilityLabel = accessibilityString ?: NSLocalizedString(@"Loading", nil);
         self.isAccessibilityElement = NO;
         self.hudView.isAccessibilityElement = YES;

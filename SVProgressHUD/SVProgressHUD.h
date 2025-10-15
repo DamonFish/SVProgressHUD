@@ -346,6 +346,8 @@ typedef void (^SVProgressHUDDismissCompletion)(void);
 
 /// Shows an info status with the provided message.
 /// @param status The info message to be displayed.
++ (void)showInfoWithStatus:(nullable NSString*)status;
+
 + (void)showInfoWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
 + (void)showSuccessWithStatus:(nullable NSString*)status;
 + (void)showSuccessWithStatus:(nullable NSString*)status maskType:(SVProgressHUDMaskType)maskType;
